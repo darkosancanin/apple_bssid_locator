@@ -1,13 +1,27 @@
 # -*- coding: utf-8 -*-
 #!/usr/bin/python
-# Based on https://github.com/hubert3/iSniff-GPS
 
+# Implementation based on https://github.com/hubert3/iSniff-GPS which in turn is based on work from the paper by François-Xavier Aguessy and Côme Demoustier (http://fxaguessy.fr/rapport-pfe-interception-ssl-analyse-donnees-localisation-smartphones/)
+# Usage: apple_bssid_locator.py 34:DB:FD:43:E3:A1 --map 
+
+import argparse
 import sys
 import code
 import requests
 import webbrowser
 import AppleWLoc_pb2
 
+def get_argument_parser():
+	parser = argparse.ArgumentParser()
+	parser.add_argument("bssid", type=str, help="display the location of the bssid")
+	parser.add_argument("-m", "--map", help="shows the location on google maps", action='store_true')
+	return parser
+	
+def parse_arguments():
+	parser = get_argument_parser()
+	args = parser.parse_args()
+	return args
+	
 def format_bssid(bssid):
 	result = ''
 	for e in bssid.split(':'):
@@ -43,17 +57,24 @@ def query_bssid(bssid):
 	return process_result(apple_wloc)
 
 def main():
+	args = parse_arguments()
 	requests.packages.urllib3.disable_warnings()
-	bssid = '20:E5:2a:fb:c0:5e'
-	results = query_bssid(bssid)
-	location = results[bssid.lower()]
-	lat = location[0]
-	lon = location[1]
-	print lat
-	print lon
-	#print results
-	url = "http://www.google.com/maps/place/" + str(location[0]) + "," + str(location[1])
-	#webbrowser.open(url)
+	print "Searching for location of bssid: " + args.bssid
+	results = query_bssid(args.bssid)
+	lat = "-180.0"
+	lon = "-180.0"
+	if len(results) > 0:
+		location = results[args.bssid.lower()]
+		lat = str(location[0])
+		lon = str(location[1])
+	if lat != "-180.0" or lon != "-180.0":
+		print "Latitude: " + lat
+		print "Longitude: " + lon
+		if args.map == True:
+			url = "http://www.google.com/maps/place/" + lat + "," + lon
+			webbrowser.open(url)
+	else:
+		print "The bssid was not found."
 
 if __name__ == '__main__':
     main()
