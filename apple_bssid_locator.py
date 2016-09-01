@@ -58,7 +58,7 @@ def query_bssid(bssid):
 
 def main():
 	args = parse_arguments()
-	requests.packages.urllib3.disable_warnings()
+	#requests.packages.urllib3.disable_warnings()
 	print "Searching for location of bssid: " + args.bssid
 	results = query_bssid(args.bssid)
 	lat = "-180.0"
