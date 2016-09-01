@@ -50,7 +50,7 @@ def query_bssid(bssid):
 	length_serialized_apple_wloc = len(serialized_apple_wloc)
 	headers = {'Content-Type':'application/x-www-form-urlencoded', 'Accept':'*/*', "Accept-Charset": "utf-8","Accept-Encoding": "gzip, deflate",\
 			"Accept-Language":"en-us", 'User-Agent':'locationd/1753.17 CFNetwork/711.1.12 Darwin/14.0.0'}
-	data = "\x00\x01\x00\x05"+"en_US"+"\x00\x13"+"com.apple.locationd"+"\x00\x0a"+"8.1.12B411"+"\x00\x00\x00\x01\x00\x00\x00" + chr(length_serialized_apple_wloc) + serialized_apple_wloc;
+	data = "\x00\x01\x00\x05"+"en_US"+"\x00\x13"+"com.apple.locationd"+"\x00\x0a"+"8.1.12B411"+"\x00\x00\x00\x01\x00\x00\x00" + chr(length_serialized_apple_wloc) + serialized_apple_wloc.decode();
 	r = requests.post('https://gs-loc.apple.com/clls/wloc', headers=headers, data=data, verify=False) # CN of cert on this hostname is sometimes *.ls.apple.com / ls.apple.com, so have to disable SSL verify
 	apple_wloc = AppleWLoc_pb2.AppleWLoc() 
 	apple_wloc.ParseFromString(r.content[10:])
@@ -59,7 +59,7 @@ def query_bssid(bssid):
 def main():
 	args = parse_arguments()
 	#requests.packages.urllib3.disable_warnings()
-	print "Searching for location of bssid: " + args.bssid
+	print("Searching for location of bssid: %s" % args.bssid)
 	results = query_bssid(args.bssid)
 	lat = "-180.0"
 	lon = "-180.0"
@@ -68,13 +68,13 @@ def main():
 		lat = str(location[0])
 		lon = str(location[1])
 	if lat != "-180.0" or lon != "-180.0":
-		print "Latitude: " + lat
-		print "Longitude: " + lon
+		print("Latitude: %s" % lat)
+		print("Longitude: %s" % lon)
 		if args.map == True:
 			url = "http://www.google.com/maps/place/" + lat + "," + lon
 			webbrowser.open(url)
 	else:
-		print "The bssid was not found."
+		print("The bssid was not found.")
 
 if __name__ == '__main__':
     main()
