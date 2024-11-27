@@ -39,8 +39,8 @@ def query_bssid(bssid):
 	apple_wloc.return_single_result = 1
 	serialized_apple_wloc = apple_wloc.SerializeToString()
 	length_serialized_apple_wloc = len(serialized_apple_wloc)
-	headers = {'Content-Type':'application/x-www-form-urlencoded', 'Accept':'*/*', "Accept-Charset": "utf-8","Accept-Encoding": "gzip, deflate",\
-			"Accept-Language":"en-us", 'User-Agent':'locationd/1753.17 CFNetwork/711.1.12 Darwin/14.0.0'}
+	# Latest versions of the UA string are at https://user-agents.net/applications/cfnetwork/platforms/ios
+	headers = {'User-Agent':'locationd/1753.17 CFNetwork/889.9 Darwin/17.2.0'}
 	data = b"\x00\x01\x00\x05"+b"en_US"+b"\x00\x13"+b"com.apple.locationd"+b"\x00\x0a"+b"8.1.12B411"+b"\x00\x00\x00\x01\x00\x00\x00" + bytes((length_serialized_apple_wloc,)) + serialized_apple_wloc;
 	r = requests.post('https://gs-loc.apple.com/clls/wloc', headers=headers, data=data, verify=False) # CN of cert on this hostname is sometimes *.ls.apple.com / ls.apple.com, so have to disable SSL verify
 	apple_wloc = AppleWLoc_pb2.AppleWLoc()
