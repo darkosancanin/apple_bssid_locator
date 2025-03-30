@@ -19,7 +19,7 @@ def parse_arguments():
 	return args
 
 def format_bssid(bssid):
-	return ':'.join(e.ljust(2, '0') for e in bssid.split(':'))
+	return ':'.join(e.rjust(2, '0') for e in bssid.split(':'))
 
 def process_result(apple_wloc):
 	device_locations = {}
