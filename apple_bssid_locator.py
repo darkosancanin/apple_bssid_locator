@@ -32,19 +32,30 @@ def process_result(apple_wloc):
 	return device_locations
 
 def query_bssid(bssid):
-	apple_wloc = AppleWLoc_pb2.AppleWLoc()
-	wifi_device = apple_wloc.wifi_devices.add()
-	wifi_device.bssid = bssid
-	apple_wloc.unknown_value1 = 0
-	apple_wloc.return_single_result = 1
+	apple_wloc = AppleWLoc_pb2.AppleWLoc(unknown_value1=0, return_single_result=1,
+		wifi_devices=[AppleWLoc_pb2.WifiDevice(bssid = bssid)])
 	serialized_apple_wloc = apple_wloc.SerializeToString()
-	length_serialized_apple_wloc = len(serialized_apple_wloc)
+
 	# Latest versions of the UA string are at https://user-agents.net/applications/cfnetwork/platforms/ios
 	headers = {'User-Agent':'locationd/1753.17 CFNetwork/889.9 Darwin/17.2.0'}
-	data = b"\x00\x01\x00\x05"+b"en_US"+b"\x00\x13"+b"com.apple.locationd"+b"\x00\x0a"+b"8.1.12B411"+b"\x00\x00\x00\x01\x00\x00\x00" + bytes((length_serialized_apple_wloc,)) + serialized_apple_wloc;
+
+	# The version string here appears to encode ${APPLE_OS_VERSION}.${APPLE_OS_BUILD},
+	# where the "build" strings are typically alphanumeric, e.g. https://en.wikipedia.org/wiki/IOS_18#Release_history
+	locale, dotted_class, version = b"en_US", b"com.apple.locationd", b"18.1.1.22B91"
+
+	# .to_bytes default is network/big-endian byte order
+	data = (
+		(1).to_bytes(2) +
+		len(locale).to_bytes(2) + locale +
+		len(dotted_class).to_bytes(2) + dotted_class +
+		len(version).to_bytes(2) + version +
+		(1).to_bytes(4) +
+		len(serialized_apple_wloc).to_bytes(4) + serialized_apple_wloc
+	)
 	r = requests.post('https://gs-loc.apple.com/clls/wloc', headers=headers, data=data, verify=False) # CN of cert on this hostname is sometimes *.ls.apple.com / ls.apple.com, so have to disable SSL verify
-	apple_wloc = AppleWLoc_pb2.AppleWLoc()
-	apple_wloc.ParseFromString(r.content[10:])
+	assert r.content[:6] == (1).to_bytes(2) + (1).to_bytes(4), "Pre-protobuf header in response is not what we expected"
+	assert r.content[6:10] == (len(r.content) - 10).to_bytes(4), "Pre-protobuf length field in response does not match expected length"
+	apple_wloc = AppleWLoc_pb2.AppleWLoc.FromString(r.content[10:])
 	return process_result(apple_wloc)
 
 def main():
