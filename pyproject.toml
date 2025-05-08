@@ -1,0 +1,10 @@
+[project]
+name = "apple-bssid-locator"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "protobuf>=3.21",
+    "requests>=2.32.3",
+]

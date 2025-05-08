@@ -1,2 +1,0 @@
-requests
-protobuf>=3.21
