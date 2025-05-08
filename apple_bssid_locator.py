@@ -42,7 +42,7 @@ def query_bssid(bssid):
 	# Latest versions of the UA string are at https://user-agents.net/applications/cfnetwork/platforms/ios
 	headers = {'User-Agent':'locationd/1753.17 CFNetwork/889.9 Darwin/17.2.0'}
 	data = b"\x00\x01\x00\x05"+b"en_US"+b"\x00\x13"+b"com.apple.locationd"+b"\x00\x0a"+b"8.1.12B411"+b"\x00\x00\x00\x01\x00\x00\x00" + bytes((length_serialized_apple_wloc,)) + serialized_apple_wloc;
-	r = requests.post('https://gs-loc.apple.com/clls/wloc', headers=headers, data=data, verify=False) # CN of cert on this hostname is sometimes *.ls.apple.com / ls.apple.com, so have to disable SSL verify
+	r = requests.post('https://gs-loc.apple.com/clls/wloc', headers=headers, data=data) # CN of cert on this hostname is sometimes *.ls.apple.com / ls.apple.com, so have to disable SSL verify
 	apple_wloc = AppleWLoc_pb2.AppleWLoc()
 	apple_wloc.ParseFromString(r.content[10:])
 	return process_result(apple_wloc)
