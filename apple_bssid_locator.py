@@ -1,5 +1,5 @@
+#!/usr/bin/env -S uv run --script
 # -*- coding: utf-8 -*-
-#!/usr/bin/python
 
 # Implementation based on https://github.com/hubert3/iSniff-GPS which in turn is based on work from the paper by François-Xavier Aguessy and Côme Demoustier (http://fxaguessy.fr/rapport-pfe-interception-ssl-analyse-donnees-localisation-smartphones/)
 # Usage: apple_bssid_locator.py 34:DB:FD:43:E3:A1 --map
