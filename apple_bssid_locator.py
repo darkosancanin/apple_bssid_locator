@@ -15,6 +15,7 @@ def parse_arguments():
 	parser = argparse.ArgumentParser()
 	parser.add_argument("bssid", type=str, help="display the location of the bssid")
 	parser.add_argument("-m", "--map", help="shows the location on google maps", action='store_true')
+	parser.add_argument("-a", "--all", help="shows all results returned, not just the requested one", action='store_true')
 	args = parser.parse_args()
 	return args
 
@@ -52,19 +53,28 @@ def main():
 	#requests.packages.urllib3.disable_warnings()
 	print("Searching for location of bssid: %s" % args.bssid)
 	results = query_bssid(args.bssid)
-	lat = "-180.0"
-	lon = "-180.0"
-	if len(results) > 0:
-		location = results[args.bssid.lower()]
-		lat = str(location[0])
-		lon = str(location[1])
-	if lat != "-180.0" or lon != "-180.0":
-		print("Latitude: %s" % lat)
-		print("Longitude: %s" % lon)
-		if args.map == True:
-			url = "http://www.google.com/maps/place/" + lat + "," + lon
-			webbrowser.open(url)
-	else:
+
+	# Determine which BSSIDs to process
+	bssids_to_process = results.keys() if args.all else [args.bssid.lower()]
+
+	found = False
+	for bssid in bssids_to_process:
+		if bssid in results:
+			lat, lon = results[bssid]
+			if lat == -180.0 and lon == -180.0:
+				continue  # Skip entries that were not found
+			lat_str = str(lat)
+			lon_str = str(lon)
+			if found: print()
+			print(f"BSSID: {bssid}")
+			print(f"Latitude: {lat_str}")
+			print(f"Longitude: {lon_str}")
+			if args.map:
+				url = f"http://www.google.com/maps/place/{lat_str},{lon_str}"
+				webbrowser.open(url)
+			found = True
+
+	if not found:
 		print("The bssid was not found.")
 
 if __name__ == '__main__':
